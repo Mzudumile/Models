@@ -1,6 +1,13 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI
+import uvicorn
+from pyngrok import ngrok
+import nest_asyncio
 from ofatest import *  # import your wrapper
 
+# Fix for running Uvicorn inside interactive environments
+nest_asyncio.apply()
+
+# Create your FastAPI app
 app = FastAPI()
 
 @app.post("/predict")
@@ -17,6 +24,14 @@ async def predict(
 
     return {"description": description}
 
-@app.get('/')
-def root():
-    return {'Hello':'world'}
+@app.get("/")
+def home():
+    return {"message": "Hello from FastAPI running with ngrok!"}
+
+if __name__ == "__main__":
+    # Start an ngrok tunnel to the FastAPI app
+    public_url = ngrok.connect(8000)
+    print(f"Public URL: {public_url}")
+
+    # Start the FastAPI server
+    uvicorn.run(app, host="0.0.0.0", port=8000)
