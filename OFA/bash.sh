@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-
+cd OFA
 # clone OFA if it doesn’t exist
 if [ ! -d "OFA" ]; then
     echo "Cloning OFA repository..."
@@ -10,4 +10,4 @@ else
 fi
 
 # start your FastAPI app
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn test:app --host 0.0.0.0 --port 8000
