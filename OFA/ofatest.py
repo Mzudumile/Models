@@ -1,25 +1,25 @@
 import torch
 from PIL import Image
-import requests
 from io import BytesIO
 from torchvision import transforms
 from transformers import OFATokenizer, OFAModel
+from typing import Union
 
-def ofa_model(path):
+# Load tokenizer and model from local clone
+MODEL_DIR = "./ofa-base"
+tokenizer = OFATokenizer.from_pretrained(MODEL_DIR)
+model = OFAModel.from_pretrained(MODEL_DIR)
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = model.to(device)
 
-    # Load tokenizer and model from local clone
-    MODEL_DIR = "./ofa-base"
-    tokenizer = OFATokenizer.from_pretrained(MODEL_DIR)
-    model = OFAModel.from_pretrained(MODEL_DIR)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = model.to(device)
-
-    # ✅ Use a reliable image URL
-    url = path 
-    response = requests.get(url)
-    image = Image.open(BytesIO(response.content)).convert("RGB")
-
+def ofa_model(image_input: Union[str, BytesIO], prompt: str):
+    
+    if isinstance(image_input, str):  # path
+        image = Image.open(image_input).convert("RGB")
+    else:  # BytesIO or file-like
+        image = Image.open(image_input).convert("RGB")
     # Preprocess image
+
     transform = transforms.Compose([
         transforms.Resize((256, 256)),
         transforms.ToTensor(),
@@ -27,8 +27,6 @@ def ofa_model(path):
     ])
     image_tensor = transform(image).unsqueeze(0).to(device)
 
-    # Text prompt (captioning)
-    prompt = " what does the image describe?"
     inputs = tokenizer([prompt], return_tensors="pt").to(device)
 
     # Run generation
